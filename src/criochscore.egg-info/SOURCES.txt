@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+src/criochscore/__init__.py
+src/criochscore/affixes.py
+src/criochscore/cli.py
+src/criochscore/english_filter.py
+src/criochscore/moirfeolas.py
+src/criochscore/scoring.py
+src/criochscore/tokenizers_io.py
+src/criochscore.egg-info/PKG-INFO
+src/criochscore.egg-info/SOURCES.txt
+src/criochscore.egg-info/dependency_links.txt
+src/criochscore.egg-info/entry_points.txt
+src/criochscore.egg-info/requires.txt
+src/criochscore.egg-info/top_level.txt
+tests/test_affixes.py
+tests/test_scoring.py
