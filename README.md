@@ -1,7 +1,9 @@
-# tknzn4Irish / CríochScore
+# tknzn4Irish
 
-CríochScore measures how well a subword tokenizer's splits respect Irish
-morpheme boundaries — urú (initial mutation), prefixes, and suffixes. It's
+This repo hosts the MoirfEolas dataset and CríochScore calculation represented in [MoirfEolas and CríochScore: Developing Resources for and the Evaluation of Tokenization Alignment with Irish Morphology](https://www.example.com) which is accepted as a non-archival poster to the [Second Tokenization Workshop ](https://tokenization-workshop.github.io/) @ COLM 2026.
+
+CríochScore measures the alignment of a tokenizers tokens/subwords with that of the morphology of the Irish language i.e. how well a tokenizer's splits respect Irish
+morpheme boundaries — urú/eclipses (initial mutation), prefixes, and suffixes. It's
 a two-stage pipeline, and the two stages are independent:
 
 1. **MoirfEolas creation** *(optional)* — build a reference table of
