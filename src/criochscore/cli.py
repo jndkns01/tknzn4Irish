@@ -66,6 +66,15 @@ def _resolve_special_token(args: argparse.Namespace) -> str | None:
         print("Special token can't be empty.")
 
 
+def _load_moirfeolas_or_exit(path: str) -> dict[str, tuple[str, str, str]]:
+    from .moirfeolas import load_moirfeolas
+
+    try:
+        return load_moirfeolas(path)
+    except ValueError as exc:
+        sys.exit(f"Error: {exc}")
+
+
 def cmd_build_moirfeolas(args: argparse.Namespace) -> None:
     from .moirfeolas import build_moirfeolas
 
@@ -85,19 +94,7 @@ def cmd_score(args: argparse.Namespace) -> None:
     model_type = _resolve_model_type(args)
     special_token = _resolve_special_token(args)
 
-    moirfeolas = pd.read_csv(args.moirfeolas)
-    for col in ("word", "urú", "prefix", "suffix"):
-        if col not in moirfeolas.columns:
-            sys.exit(f"Error: MoirfEolas file is missing required column '{col}'.")
-
-    combined_affix = {
-        row["word"]: (
-            "" if pd.isna(row["urú"]) else str(row["urú"]),
-            "" if pd.isna(row["prefix"]) else str(row["prefix"]),
-            "" if pd.isna(row["suffix"]) else str(row["suffix"]),
-        )
-        for _, row in moirfeolas.iterrows()
-    }
+    combined_affix = _load_moirfeolas_or_exit(args.moirfeolas)
     words = list(combined_affix.keys())
     print(f"Loaded {len(words)} words from MoirfEolas.")
 
@@ -131,6 +128,49 @@ def cmd_score(args: argparse.Namespace) -> None:
     for name, value in average_scores.items():
         if value is not None:
             print(f"  {name}: {value * 100:.2f}%")
+
+    if args.absorption:
+        from .absorption import compute_absorption, write_absorption_csv
+
+        row = {"tokenizer": f"{tokenizer_name}{suffix}"}
+        row.update(compute_absorption(score_info, combined_affix))
+        write_absorption_csv([row], output_dir / f"{tokenizer_name}{suffix}_absorption.csv")
+
+
+def cmd_absorption(args: argparse.Namespace) -> None:
+    import json
+
+    from .absorption import compute_absorption, write_absorption_csv
+
+    combined_affix = _load_moirfeolas_or_exit(args.moirfeolas)
+    print(f"Loaded {len(combined_affix)} words from MoirfEolas.")
+
+    rows = []
+    for summary_path in args.summary:
+        with open(summary_path, encoding="utf-8") as f:
+            score_info = json.load(f)
+
+        missing = sum(1 for word in score_info if word not in combined_affix)
+        if missing:
+            print(f"Warning: {missing} words in {summary_path} are not in the MoirfEolas "
+                  "file and will be ignored.")
+
+        name = Path(summary_path).stem
+        name = name.removesuffix("_morphological_summary")
+        row = {"tokenizer": name}
+        row.update(compute_absorption(score_info, combined_affix))
+        rows.append(row)
+
+        print(f"\n{name}")
+        print(f"  uru absorbed: {row['uru_absorbed_%']:.2f}%  (mapping: {row['uru_mapping_%']:.2f}%)")
+        print(f"  suffix fully/split absorbed: {row['suffix_fully_absorbed_%']:.2f}% / "
+              f"{row['suffix_split_absorbed_%']:.2f}%")
+        print(f"  prefix fully/split absorbed: {row['prefix_fully_absorbed_%']:.2f}% / "
+              f"{row['prefix_split_absorbed_%']:.2f}%")
+
+    output_dir = Path(args.output_dir)
+    filename = f"{rows[0]['tokenizer']}_absorption.csv" if len(rows) == 1 else "absorption_results.csv"
+    write_absorption_csv(rows, output_dir / filename)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -178,9 +218,26 @@ def build_parser() -> argparse.ArgumentParser:
                                 help="Literal special-token marker, e.g. '##', '▁', 'Ġ'.")
     special_group.add_argument("--no-special-token", action="store_true",
                                 help="Declare that this tokenizer has no special token.")
+    p_score.add_argument("--absorption", action="store_true",
+                          help="Also run the absorption analysis (urú, prefix, suffix) and write "
+                               "<tokenizer>_absorption.csv alongside the other results.")
     p_score.add_argument("--output-dir", default="results",
                           help="Folder (created in the current directory by default) to write results to.")
     p_score.set_defaults(func=cmd_score)
+
+    p_abs = subparsers.add_parser(
+        "absorption",
+        help="Run the urú/prefix/suffix absorption analysis on saved 'score' results "
+             "(no tokenizer needed).",
+    )
+    p_abs.add_argument("--summary", required=True, nargs="+",
+                        help="One or more *_morphological_summary.json files written by 'score'. "
+                             "Several files produce one combined CSV.")
+    p_abs.add_argument("--moirfeolas", default=str(DEFAULT_MOIRFEOLAS),
+                        help=f"MoirfEolas CSV the summaries were scored against (default: {DEFAULT_MOIRFEOLAS}).")
+    p_abs.add_argument("--output-dir", default="results",
+                        help="Folder to write the absorption CSV to.")
+    p_abs.set_defaults(func=cmd_absorption)
 
     return parser
 
