@@ -1,4 +1,4 @@
-# tknzn4Irish / CríochScore
+# CríochScore and MoirfEolas
 
 CríochScore measures how well a subword tokenizer's splits respect Irish
 morpheme boundaries — urú (initial mutation), prefixes, and suffixes. It's
@@ -216,3 +216,7 @@ prompt offers it as `other` if you don't pass `--model-type`).
 The special-token question is independent of `--model-type` — a
 `standard` or `huggingface` WordPiece tokenizer, for example, would still
 be declared with `--special-token "##"`.
+
+
+**Note** 
+This work appears in the paper [MoirfEolas and CríochScore: Developing Resources for and the Evaluation of Tokenization Alignment with Irish Morphology](https://arxiv.org/abs/2609.05022) which was presented at The Second Tokenization Workshhop (TokShop) at COLM 2026. Since uploading to arXiv, some errors have been found in the MoirfEolas dataset and have subsequently been resolved. This means that if using the tokenizers hosted in this repo along with the MoirfEolas dataset hosted here, results are slightly different to those reported but nonetheless still gather the same findings as discussed in the paper.
