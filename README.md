@@ -85,6 +85,81 @@ criochscore score \
   - `<tokenizer_name>_criochscore.txt` — the aggregate CríochScore and
     per-category breakdown.
 
+## Absorption analysis (urú, prefix, suffix)
+
+Absorption measures how often a tokenizer swallows a morpheme into a larger
+token instead of keeping it as its own piece:
+
+- **Urú absorbed** — % of words with an urú whose first token is not exactly
+  the urú. **Urú mapping** is the subset where the first token is exactly the
+  urú plus the letter that follows it.
+- **Prefix / suffix fully absorbed** — the affix sits inside a longer token.
+  **Split absorbed** — the affix is spread over several tokens that each carry
+  part of it. Both are percentages of all evaluated words that have that
+  affix, and only words the CríochScore marked "tokenized incorrectly" can be
+  absorbed.
+
+Run it as part of scoring:
+
+```bash
+criochscore score --tokenizer ... --model-type ... --no-special-token --absorption
+```
+
+or afterwards, from the summary files `score` already wrote (no tokenizer
+needed, so nothing is re-downloaded):
+
+```bash
+criochscore absorption \
+    --summary results/bbpe_8k_morphological_summary.json \
+              results/bbpe_16k_morphological_summary.json \
+    --moirfeolas data/MoirfEolas/MoirfEolas.csv \
+    --output-dir results/
+```
+
+One summary writes `<name>_absorption.csv`; several write a combined
+`absorption_results.csv` with one row per tokenizer. Use the same MoirfEolas
+the summaries were scored against. Percentages are of words actually
+evaluated (so `--exclude-single-token` runs are handled correctly), and the
+CSV includes the word counts used as denominators.
+
+## Absorption analysis
+
+Absorption measures how often a tokenizer swallows a morpheme into a
+larger token instead of leaving it as its own piece:
+
+- **Urú absorbed** — % of words with an urú whose first token is not exactly
+  the urú. **Urú mapping** is the subset where the first token is exactly the
+  urú plus the letter that follows it.
+- **Prefix / suffix fully absorbed** — the affix sits inside a longer token.
+- **Prefix / suffix split absorbed** — the affix is spread over several tokens
+  that each carry part of it.
+
+Prefix/suffix absorption is only measured for words whose affix was
+"tokenized incorrectly" in the CríochScore, and is reported as a percentage of
+all evaluated words that have that affix. Denominators are the words actually
+evaluated (so `--exclude-single-token` runs stay correct).
+
+Run it alongside scoring:
+
+```bash
+criochscore score --tokenizer my_tokenizer.json --model-type standard \
+    --no-special-token --absorption --output-dir results/
+```
+
+or afterwards, from saved results, with no tokenizer needed (several
+`--summary` files give one combined CSV, e.g. for 8k/16k/32k/64k):
+
+```bash
+criochscore absorption \
+    --summary results/tok_8k_morphological_summary.json results/tok_16k_morphological_summary.json \
+    --moirfeolas data/MoirfEolas/MoirfEolas.csv \
+    --output-dir results/
+```
+
+Pass the same `--moirfeolas` you scored against. Output is
+`<tokenizer>_absorption.csv` (or `absorption_results.csv` for several
+summaries), including the word counts behind each percentage.
+
 ## Data layout
 
 ```
