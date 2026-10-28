@@ -102,7 +102,13 @@ token instead of keeping it as its own piece:
 Run it as part of scoring:
 
 ```bash
-criochscore score --tokenizer ... --model-type ... --no-special-token --absorption
+criochscore score \
+    --tokenizer path/to/your_tokenizer.json \
+    --model-type standard \
+    --no-special-token \
+    --exclude-single-token \
+    --absorption \
+    --output-dir results/
 ```
 
 or afterwards, from the summary files `score` already wrote (no tokenizer
