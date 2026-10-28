@@ -127,12 +127,11 @@ CSV includes the word counts used as denominators.
 Absorption measures how often a tokenizer swallows a morpheme into a
 larger token instead of leaving it as its own piece:
 
-- **Urú absorbed** — % of words with an urú whose first token is not exactly
+- **Urú absorbed** — % of words with an urú/eclipsis whose first token is not exactly
   the urú. **Urú mapping** is the subset where the first token is exactly the
-  urú plus the letter that follows it.
-- **Prefix / suffix fully absorbed** — the affix sits inside a longer token.
-- **Prefix / suffix split absorbed** — the affix is spread over several tokens
-  that each carry part of it.
+  urú/eclipsis plus the letter that follows it.
+- **Prefix / suffix fully absorbed** — the affix sits inside a longer token i.e. merged/absorbed into subsequent/previous token.
+- **Prefix / suffix split absorbed** — the affix is spread over several tokens i.e. part of the affix is absorbed/merged into subsequent/previous token.
 
 Prefix/suffix absorption is only measured for words whose affix was
 "tokenized incorrectly" in the CríochScore, and is reported as a percentage of
