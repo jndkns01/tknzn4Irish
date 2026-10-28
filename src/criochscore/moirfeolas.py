@@ -25,6 +25,28 @@ def load_corpus(path: str | Path) -> list[str]:
     return tokens
 
 
+REQUIRED_COLUMNS = ("word", "urú", "prefix", "suffix")
+
+
+def load_moirfeolas(path: str | Path) -> dict[str, tuple[str, str, str]]:
+    """Read a MoirfEolas CSV into ``{word: (uru, prefix, suffix)}``.
+
+    Every cell is read as text (so numeric-looking words stay strings and
+    words like 'NA' aren't turned into NaN), empty affix cells become '',
+    and rows with a blank word are dropped. Extra columns (e.g. a saved
+    index column) are ignored.
+    """
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    for col in REQUIRED_COLUMNS:
+        if col not in df.columns:
+            raise ValueError(f"MoirfEolas file is missing required column '{col}'.")
+    df = df[df["word"].str.strip() != ""]
+    return {
+        word: (uru, prefix, suffix)
+        for word, uru, prefix, suffix in zip(df["word"], df["urú"], df["prefix"], df["suffix"])
+    }
+
+
 def build_moirfeolas(
     corpus_path: str | Path,
     prefixes_path: str | Path,
